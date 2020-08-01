@@ -14,58 +14,31 @@ public class JpaMain {
         // code
 
         try {
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            em.persist(member);
+//            Member member = new Member();
+//            member.setUsername("member1");
+//            member.setAge(10);
+//            em.persist(member);
+
+            for (int i = 0; i < 100; i++) {
+                Member m = new Member();
+                m.setUsername("member" + i);
+                m.setAge(i);
+                em.persist(m);
+            }
 
             em.flush();
             em.clear();
 
-            /*
-             * 여러 값 조회
-             */
-
-            // 3. 단순 값을 DTO로 바로 조회 -> 제일 중요 -> new 명령어로
-
-            List<MemberDTO> res = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+            List<Member> resultList = em.createQuery("select m from Member m order by m.age desc", Member.class)
+                    .setFirstResult(0)
+                    .setMaxResults(10)
                     .getResultList();
 
-            MemberDTO memberDTO = res.get(0);
-            System.out.println("username = " + memberDTO.getUsername());
-            System.out.println("age = " + memberDTO.getAge());
-
-            // 2. generic
-            List<Object[]> resultList1 = em.createQuery("select m.username, m.age from Member m")
-                    .getResultList();
-            Object[] result1 = resultList1.get(0);
-            System.out.println("username = " + result1[0]);
-            System.out.println("age = " + result1[1]);
-            // 1. query type으로 조회
-
-            List resultList = em.createQuery("select m.username, m.age from Member m")
-                    .getResultList();
-
-            Object o = resultList.get(0);
-            Object[] result = (Object[]) o;
-
-            System.out.println("username = " + result[0]);
-            System.out.println("age = " + result[1]);
-
-            /*
-             * imbedded type projection
-             * 한계점 : 소속 entity를 명시해주어야 한다.
-             */
-
-            List<Address> list = em.createQuery("select o.address from Order o", Address.class)
-                    .getResultList();
-
-            /*
-             * join이 발생하는 entity 프로젝션은 join을 명시적으로 사용해야 쿼리 튜닝이 수월해진다
-             */
-//            List<Team> result = em.createQuery("select t from Member m join m.team t", Team.class)
-//                    .getResultList();
-
+            System.out.println("result.size = " + resultList.size());
+            for (Member m : resultList) {
+                System.out.println("m.username = " + m.getUsername());
+                System.out.println("m.age = " + m.getAge());
+            }
 
             tx.commit();
         } catch(Exception e) {
