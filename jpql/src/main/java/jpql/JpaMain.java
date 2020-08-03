@@ -1,6 +1,7 @@
 package jpql;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.List;
 
 public class JpaMain {
@@ -19,30 +20,14 @@ public class JpaMain {
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("member");
+            member.setUsername("member2");
             member.setAge(10);
             member.setTeam(team);
             member.setMemberType(MemberType.ADMIN);
             em.persist(member);
 
-            em.flush();
-            em.clear();
 
-            /*
-             * case - end 문법
-             */
 
-//            String query = "select case when m.age <= 10 then '학생요금' when m.age >= 60 then '경로요금' else '일반요금' end from Member m";
-//
-//            List<String> resultList = em.createQuery(query, String.class).getResultList();
-//
-//            for(String s : resultList) {
-//                System.out.println("s = " + s);
-//            }
-
-            /*
-             * coalesce 문법
-             */
             Member member1 = new Member();
             member1.setUsername("관리자");
             member1.setAge(10);
@@ -50,26 +35,34 @@ public class JpaMain {
             member1.setMemberType(MemberType.ADMIN);
             em.persist(member1);
 
-            String query = "select coalesce(m.username, '이름 없는 회원') from Member m";
 
-            List<String> coalResult = em.createQuery(query, String.class).getResultList();
+            em.flush();
+            em.clear();
 
-            for(String s : coalResult) {
-                System.out.println("s : " + s);
-            }
+            /*
+             * 경로 표현식
+             * 단일 값 연관 경로
+             */
+//            String query = "select m.team from Member m";
+
+            /*
+             * 컬렉션 값 연관 경로
+             */
+
+//            String query = "select t.members from Team t";
+//            List<Collection> result = em.createQuery(query, Collection.class).getResultList();
 
 
             /*
-             * nullif 문법
+             * 컬렉션 값 연관 경로 -> from절에서 명시적 join을 통해 alias를 얻어 컬렉션에 저장된 엔티티 필드 탐색
              */
 
-            String query1 = "select nullif(m.team.name, 'team A') as username from Member m";
-            List<String> nullifRes = em.createQuery(query1, String.class).getResultList();
+            String query = "select m.username from Team t join t.members m";
+            List<String> resultList = em.createQuery(query, String.class).getResultList();
 
-            for (String s : nullifRes) {
-                System.out.println("s = " + s) ;
+            for (String s : resultList) {
+                System.out.println("result : " + s);
             }
-
             tx.commit();
         } catch(Exception e) {
             tx.rollback();
