@@ -22,18 +22,53 @@ public class JpaMain {
             member.setUsername("member");
             member.setAge(10);
             member.setTeam(team);
+            member.setMemberType(MemberType.ADMIN);
             em.persist(member);
 
             em.flush();
             em.clear();
 
-//            select절 서브쿼리를 하이버네이트가 지원한다. jpa 표준 스펙에선 지원하지 않
-//            String query = "select (select avg(m1.age) from Member m1) as avgAge from Member m"...;
+            /*
+             * case - end 문법
+             */
 
-//            from절 서브쿼리는 안된다.
-//            String query = "select mm.age, mm.username from (select m.age, m.username from Member m) as mm ..."
-            em.createQuery(query);
+//            String query = "select case when m.age <= 10 then '학생요금' when m.age >= 60 then '경로요금' else '일반요금' end from Member m";
+//
+//            List<String> resultList = em.createQuery(query, String.class).getResultList();
+//
+//            for(String s : resultList) {
+//                System.out.println("s = " + s);
+//            }
 
+            /*
+             * coalesce 문법
+             */
+            Member member1 = new Member();
+            member1.setUsername("관리자");
+            member1.setAge(10);
+            member1.setTeam(team);
+            member1.setMemberType(MemberType.ADMIN);
+            em.persist(member1);
+
+            String query = "select coalesce(m.username, '이름 없는 회원') from Member m";
+
+            List<String> coalResult = em.createQuery(query, String.class).getResultList();
+
+            for(String s : coalResult) {
+                System.out.println("s : " + s);
+            }
+
+
+            /*
+             * nullif 문법
+             */
+
+            String query1 = "select nullif(m.team.name, 'team A') as username from Member m";
+            List<String> nullifRes = em.createQuery(query1, String.class).getResultList();
+
+            for (String s : nullifRes) {
+                System.out.println("s = " + s) ;
+            }
 
             tx.commit();
         } catch(Exception e) {
