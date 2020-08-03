@@ -14,31 +14,44 @@ public class JpaMain {
         // code
 
         try {
-//            Member member = new Member();
-//            member.setUsername("member1");
-//            member.setAge(10);
-//            em.persist(member);
+            Team team = new Team();
+            team.setName("team A");
+            em.persist(team);
 
-            for (int i = 0; i < 100; i++) {
-                Member m = new Member();
-                m.setUsername("member" + i);
-                m.setAge(i);
-                em.persist(m);
-            }
+            Member member = new Member();
+            member.setUsername("member");
+            member.setAge(10);
+            member.setTeam(team);
+            em.persist(member);
 
             em.flush();
             em.clear();
 
-            List<Member> resultList = em.createQuery("select m from Member m order by m.age desc", Member.class)
-                    .setFirstResult(0)
-                    .setMaxResults(10)
+            String query = "select m from Member m left outer join m.team t on t.name = 'teamA'";
+            List<Member> resultList = em.createQuery(query, Member.class)
                     .getResultList();
+            /*
+             * 1. inner join
+             */
 
-            System.out.println("result.size = " + resultList.size());
-            for (Member m : resultList) {
-                System.out.println("m.username = " + m.getUsername());
-                System.out.println("m.age = " + m.getAge());
-            }
+//            String query = "select m from Member m inner join m.team t";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .getResultList();
+
+            /*
+             * 2. outer join
+             */
+
+//            String query = "select m from Member m left outer join m.team t";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .getResultList();
+
+            /*
+             * 3. theta join
+             */
+//            String query = "select m from Member m, Team t where m.username = t.name";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .getResultList();
 
             tx.commit();
         } catch(Exception e) {

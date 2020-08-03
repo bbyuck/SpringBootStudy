@@ -10,7 +10,20 @@ public class Member {
     private String username;
     private int age;
 
-    @ManyToOne
+    public void changeTeam(Team team){
+        this.team = team;
+        team.getMembers().add(this);
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "TEAM_ID", referencedColumnName = "TEAM_ID")
     private Team team;
 
