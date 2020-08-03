@@ -27,31 +27,13 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select m from Member m left outer join m.team t on t.name = 'teamA'";
-            List<Member> resultList = em.createQuery(query, Member.class)
-                    .getResultList();
-            /*
-             * 1. inner join
-             */
+//            select절 서브쿼리를 하이버네이트가 지원한다. jpa 표준 스펙에선 지원하지 않
+//            String query = "select (select avg(m1.age) from Member m1) as avgAge from Member m"...;
 
-//            String query = "select m from Member m inner join m.team t";
-//            List<Member> resultList = em.createQuery(query, Member.class)
-//                    .getResultList();
+//            from절 서브쿼리는 안된다.
+//            String query = "select mm.age, mm.username from (select m.age, m.username from Member m) as mm ..."
+            em.createQuery(query);
 
-            /*
-             * 2. outer join
-             */
-
-//            String query = "select m from Member m left outer join m.team t";
-//            List<Member> resultList = em.createQuery(query, Member.class)
-//                    .getResultList();
-
-            /*
-             * 3. theta join
-             */
-//            String query = "select m from Member m, Team t where m.username = t.name";
-//            List<Member> resultList = em.createQuery(query, Member.class)
-//                    .getResultList();
 
             tx.commit();
         } catch(Exception e) {
