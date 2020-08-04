@@ -15,54 +15,85 @@ public class JpaMain {
         // code
 
         try {
-            Team team = new Team();
-            team.setName("team A");
-            em.persist(team);
+            Team team1 = new Team();
+            Team team2 = new Team();
+            Team team3 = new Team();
 
-            Member member = new Member();
-            member.setUsername("member2");
-            member.setAge(10);
-            member.setTeam(team);
-            member.setMemberType(MemberType.ADMIN);
-            em.persist(member);
+            team1.setName("팀A");
+            team2.setName("팀B");
+            team3.setName("팀C");
 
-
+            em.persist(team1);
+            em.persist(team2);
+            em.persist(team3);
 
             Member member1 = new Member();
-            member1.setUsername("관리자");
-            member1.setAge(10);
-            member1.setTeam(team);
-            member1.setMemberType(MemberType.ADMIN);
-            em.persist(member1);
+            Member member2 = new Member();
+            Member member3 = new Member();
+            Member member4 = new Member();
 
+            member1.setUsername("회원1");
+            member2.setUsername("회원2");
+            member3.setUsername("회원3");
+            member4.setUsername("회원4");
+
+            member1.setTeam(team1);
+            member2.setTeam(team1);
+            member3.setTeam(team2);
+
+            em.persist(member1);
+            em.persist(member2);
+            em.persist(member3);
+            em.persist(member4);
 
             em.flush();
             em.clear();
 
             /*
-             * 경로 표현식
-             * 단일 값 연관 경로
+             * many to one 페치 조인 --> 실무에서 많이 쓰인다. 여기서 m.team은 프록시가 아닌 실제 엔티티 데이터가 영속성 컨텍스트에 담겨 저장됨
              */
-//            String query = "select m.team from Member m";
 
             /*
-             * 컬렉션 값 연관 경로
-             */
+            String query = "select m from Member m join fetch m.team";
+            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
 
-//            String query = "select t.members from Team t";
-//            List<Collection> result = em.createQuery(query, Collection.class).getResultList();
+            for(Member m : resultList) {
+                System.out.println("member = " + m.getUsername() + ", " + m.getTeam().getName());
 
-
-            /*
-             * 컬렉션 값 연관 경로 -> from절에서 명시적 join을 통해 alias를 얻어 컬렉션에 저장된 엔티티 필드 탐색
-             */
-
-            String query = "select m.username from Team t join t.members m";
-            List<String> resultList = em.createQuery(query, String.class).getResultList();
-
-            for (String s : resultList) {
-                System.out.println("result : " + s);
+                // 회원1, 팀A(SQL)
+                // 회원2, 팀A(1차 캐시)
+                // 회원3, 팀B(SQL)
             }
+            */
+
+            /*
+             * 컬렉션 페치 조인 --> one to many -> 데이터가 증가할 수 있으므로 일대다 연관관계 매칭에서는 페치 조인시 distinct로 데이터 뻥튀기 막음
+             */
+
+//            String query = "select distinct t from Team t join fetch t.members";
+//            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
+//
+//            for (Team t : resultList) {
+//                // System.out.println("team = " + t.getName() + " | " + t.getMembers().size());
+//                System.out.println("team = " + t + "\t" + t.getMembers());
+//                // One To Many 관계에서는 중복 데이터가 발생할 수 있음 -> 영속성 컨텍스트에서는 하나의 인스턴스로 관리하긴 하지만 참조를 두 번 하게됨.
+//            }
+
+            /*
+             * 일반 조인과 페치조인의 차이점
+             */
+
+            String query = "select t from Team t join t.members m";
+            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
+
+            for(Team t1 : resultList) {
+                System.out.println("Team = " + t1.getName() + "| members = " + t1.getMembers().size());
+                for(Member m : t1.getMembers()) {
+                    System.out.println("-> member = Member{id=" + m.getId() + ", " + "username='" + m.getUsername() + "', age=" + m.getAge());
+                }
+            }
+
+
             tx.commit();
         } catch(Exception e) {
             tx.rollback();
