@@ -79,13 +79,13 @@ public class JpaMain {
             movie2.setDirector("봉준호");
             movie2.setName("괴물");
             movie2.setPrice(15000);
-            movie2.setStockQuantity(10);
+            movie2.setStockQuantity(5);
 
             movie3.setActor("송강호");
             movie3.setDirector("봉준호");
             movie3.setName("설국열차");
             movie3.setPrice(20000);
-            movie3.setStockQuantity(10);
+            movie3.setStockQuantity(13);
 
             em.persist(movie1);
             em.persist(movie2);
@@ -94,14 +94,31 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            List<Member> username = em.createNamedQuery("Member.findByUsername", Member.class)
-                    .setParameter("username", member1.getUsername())
-                    .getResultList();
+//            String query = "update Item i set i.price = i.price * 1.1 where i.stockQuantity < :stockQuantity";
+//            int resultCount = em.createQuery(query)
+//                    .setParameter("stockQuantity", 10)
+//                    .executeUpdate();
+//
+//            System.out.println(resultCount);
 
-            for (Member m : username) {
-                System.out.println("m = " + m.getUsername());
-            }
 
+            /*
+             * flush 자동호출   나
+             * 원래는 commit하거나, query나가거나, flush 강제호출하거
+             */
+            String query = "update Member m set m.age = 10";
+            int i = em.createQuery(query).executeUpdate();
+
+            /*
+             * DB에는 쿼리가 나가 업데이트가 된 상태로 저장이 되었지만것 -> flush 발생
+             * 영속성 컨텍스트에는 반영이 되지 않았으므로 벌크연산 수행 후 영속성 컨텍스트 초기화 해줄
+             * em.clear(); 가 반드시 필요
+             */
+            em.clear();
+
+            System.out.println("member1.getAge() = " + member1.getAge());
+            System.out.println("member2.getAge() = " + member2.getAge());
+            System.out.println("member3.getAge() = " + member3.getAge());
 
             tx.commit();
         } catch(Exception e) {
