@@ -83,17 +83,37 @@ public class JpaMain {
              * 일반 조인과 페치조인의 차이점
              */
 
-            String query = "select t from Team t join t.members m";
-            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
+//            String query = "select t from Team t join t.members m";
+//            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
+//
+//            for(Team t1 : resultList) {
+//                System.out.println("Team = " + t1.getName() + "| members = " + t1.getMembers().size());
+//                for(Member m : t1.getMembers()) {
+//                    System.out.println("-> member = Member{id=" + m.getId() + ", " + "username='" + m.getUsername() + "', age=" + m.getAge());
+//                }
+//            }
 
+            /*
+             * 페치 조인의 대상 엔티티에는 alias를 주면 안된다.
+             * 둘 이상의 컬렉션은 페치 조인할 수 없다.
+             * 컬렉션을 페치 조인하면 페이징 api를 쓸 수 없다. -> 일대다 연관관계 페치조인하면 데이터가 뻥튀기돼서 페이징 api를 사용할 수 없다.
+             *
+             *
+             * 일대다 연관관계 페치조인을 다대일 연관관계 페치조인으로 바꾸어서 페이징 api홯용하는방법
+             * Entity에 @BatchSize(value = 1000 이하)
+             */
+
+            String query = "select t from Team t";
+            List<Team> resultList = em.createQuery(query, Team.class)
+                    .setFirstResult(0)
+                    .setMaxResults(2)
+                    .getResultList();
             for(Team t1 : resultList) {
                 System.out.println("Team = " + t1.getName() + "| members = " + t1.getMembers().size());
                 for(Member m : t1.getMembers()) {
                     System.out.println("-> member = Member{id=" + m.getId() + ", " + "username='" + m.getUsername() + "', age=" + m.getAge());
                 }
             }
-
-
             tx.commit();
         } catch(Exception e) {
             tx.rollback();
