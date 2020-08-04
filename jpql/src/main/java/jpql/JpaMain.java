@@ -94,65 +94,14 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-
-            /*
-             * jpql에서 데이터에 접근하는 것이 아닌 엔티티를 직접 사용하면 해당 엔티티의 기본 키값을 사용하는 sql쿼리를 내보냄
-             */
-
-
-            /*
-            String query = "select count(m) from Member m";
-//            String query = "select count(m) from Member m"; // Member 엔티티의 기본 키값인 Member.id를 사용
-            Integer singleResult = em.createQuery(query, Integer.class).getSingleResult();
-            System.out.println(singleResult);
-             */
-
-            /*
-             * 엔티티를 jpql 파라미터로 전달해도 기본 키값을 이용한 sql을 보내준다.
-             */
-
-//            String query = "select m from Member m where m = :member";
-//            Member findMember = em.createQuery(query, Member.class)
-//                    .setParameter("member", member1)
-//                    .getSingleResult();
-
-            /*
-             * 위와 아래가 동일한 SQL 쿼리를 내보냄
-             */
-//            String query = "select m from Member m where m.id =:memberId";
-//            Member findMember = em.createQuery(query, Member.class)
-//                    .setParameter("memberId", member1.getId())
-//                    .getSingleResult();
-//            System.out.println(findMember);
-
-
-
-            /*
-             * 엔티티 직접사용 foreign key 값
-             */
-
-//            String query = "select m from Member m where m.team.id = :teamId";
-//            List<Member> findMember = em.createQuery(query, Member.class)
-//                    .setParameter("teamId", team1.getId())
-//                    .getResultList();
-//
-//            for (Member m : findMember) {
-//                System.out.println("Member = " + m);
-//            }
-
-            /*
-             * 위 아래가 동일한 SQL 내보냄
-             */
-            
-            String query = "select m from Member m where m.team = :team";
-            List<Member> findMember = em.createQuery(query, Member.class)
-                    .setParameter("team", team1)
+            List<Member> username = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", member1.getUsername())
                     .getResultList();
 
-            for (Member m : findMember) {
-                System.out.println("Member = " + m);
+            for (Member m : username) {
+                System.out.println("m = " + m.getUsername());
             }
-            
+
 
             tx.commit();
         } catch(Exception e) {
