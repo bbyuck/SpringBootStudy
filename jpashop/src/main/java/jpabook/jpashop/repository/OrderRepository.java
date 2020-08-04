@@ -28,7 +28,7 @@ public class OrderRepository {
 //                        .setMaxResults(1000)
 //                        .getResultList();
 
-    public List<Order> findAllByCriteria(OrderSearch orderSearch) {
-
-    }
+//    public List<Order> findAllByCriteria(OrderSearch orderSearch) {
+//
+//    }
 }
