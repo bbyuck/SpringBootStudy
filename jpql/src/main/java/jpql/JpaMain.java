@@ -46,74 +46,76 @@ public class JpaMain {
             em.persist(member3);
             em.persist(member4);
 
+            Book book1 = new Book();
+            Book book2 = new Book();
+
+            book1.setAuthor("김영한");
+            book1.setName("JPA");
+            book1.setIsbn("12312321");
+            book1.setPrice(10000);
+            book1.setStockQuantity(10);
+
+            book2.setAuthor("강혁");
+            book2.setName("EGO");
+            book2.setIsbn("12142321");
+            book2.setPrice(50000);
+            book2.setStockQuantity(10);
+
+            em.persist(book1);
+            em.persist(book2);
+
+            Movie movie1 = new Movie();
+            Movie movie2 = new Movie();
+            Movie movie3 = new Movie();
+
+            movie1.setActor("송강호");
+            movie1.setDirector("봉준호");
+            movie1.setName("살인의 추억");
+            movie1.setPrice(11000);
+            movie1.setStockQuantity(10);
+
+            movie2.setActor("배두나");
+            movie2.setDirector("봉준호");
+            movie2.setName("괴물");
+            movie2.setPrice(15000);
+            movie2.setStockQuantity(10);
+
+            movie3.setActor("송강호");
+            movie3.setDirector("봉준호");
+            movie3.setName("설국열차");
+            movie3.setPrice(20000);
+            movie3.setStockQuantity(10);
+
+            em.persist(movie1);
+            em.persist(movie2);
+            em.persist(movie3);
+
             em.flush();
             em.clear();
 
             /*
-             * many to one 페치 조인 --> 실무에서 많이 쓰인다. 여기서 m.team은 프록시가 아닌 실제 엔티티 데이터가 영속성 컨텍스트에 담겨 저장됨
+             * Discriminator column
              */
 
-            /*
-            String query = "select m from Member m join fetch m.team";
-            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
-
-            for(Member m : resultList) {
-                System.out.println("member = " + m.getUsername() + ", " + m.getTeam().getName());
-
-                // 회원1, 팀A(SQL)
-                // 회원2, 팀A(1차 캐시)
-                // 회원3, 팀B(SQL)
-            }
-            */
-
-            /*
-             * 컬렉션 페치 조인 --> one to many -> 데이터가 증가할 수 있으므로 일대다 연관관계 매칭에서는 페치 조인시 distinct로 데이터 뻥튀기 막음
-             */
-
-//            String query = "select distinct t from Team t join fetch t.members";
-//            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
+//            String query = "select i from Item i where type(i) IN (Book, Movie)";
 //
-//            for (Team t : resultList) {
-//                // System.out.println("team = " + t.getName() + " | " + t.getMembers().size());
-//                System.out.println("team = " + t + "\t" + t.getMembers());
-//                // One To Many 관계에서는 중복 데이터가 발생할 수 있음 -> 영속성 컨텍스트에서는 하나의 인스턴스로 관리하긴 하지만 참조를 두 번 하게됨.
+//            List<Item> resultList = em.createQuery(query, Item.class).getResultList();
+//
+//            for(Item i : resultList) {
+//                System.out.println("Item = " + i.getName());
 //            }
 
             /*
-             * 일반 조인과 페치조인의 차이점
+             * TREAT (JPA 2.1)
              */
 
-//            String query = "select t from Team t join t.members m";
-//            List<Team> resultList = em.createQuery(query, Team.class).getResultList();
-//
-//            for(Team t1 : resultList) {
-//                System.out.println("Team = " + t1.getName() + "| members = " + t1.getMembers().size());
-//                for(Member m : t1.getMembers()) {
-//                    System.out.println("-> member = Member{id=" + m.getId() + ", " + "username='" + m.getUsername() + "', age=" + m.getAge());
-//                }
-//            }
+            String query = "select i from Item i where treat(i as Book).author = '김영한'";
+            List<Item> resultList = em.createQuery(query, Item.class).getResultList();
 
-            /*
-             * 페치 조인의 대상 엔티티에는 alias를 주면 안된다.
-             * 둘 이상의 컬렉션은 페치 조인할 수 없다.
-             * 컬렉션을 페치 조인하면 페이징 api를 쓸 수 없다. -> 일대다 연관관계 페치조인하면 데이터가 뻥튀기돼서 페이징 api를 사용할 수 없다.
-             *
-             *
-             * 일대다 연관관계 페치조인을 다대일 연관관계 페치조인으로 바꾸어서 페이징 api홯용하는방법
-             * Entity에 @BatchSize(value = 1000 이하)
-             */
-
-            String query = "select t from Team t";
-            List<Team> resultList = em.createQuery(query, Team.class)
-                    .setFirstResult(0)
-                    .setMaxResults(2)
-                    .getResultList();
-            for(Team t1 : resultList) {
-                System.out.println("Team = " + t1.getName() + "| members = " + t1.getMembers().size());
-                for(Member m : t1.getMembers()) {
-                    System.out.println("-> member = Member{id=" + m.getId() + ", " + "username='" + m.getUsername() + "', age=" + m.getAge());
-                }
+            for(Item i : resultList) {
+                System.out.println("Item = " + i.getName());
             }
+
             tx.commit();
         } catch(Exception e) {
             tx.rollback();
